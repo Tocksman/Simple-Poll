@@ -1,0 +1,18 @@
+name: Simple Poll
+main: com.betaforce.shardin.SimplePoll.SimplePoll
+version: 0.1
+description: Let's admin issue a poll with customizeable options.
+author: Tocksman
+website: http://goonhaven.org/
+permissions:
+  SimplePoll.create:
+    description: Allowed to create and remove polls.
+    default: op
+  SimplePoll.vote:
+    description: Allowed to vote in polls.
+    default: true
+
+commands:
+  simplepoll:
+    description: This is the main SimplePoll control command.
+    usage: /simplepoll <option> <args>
