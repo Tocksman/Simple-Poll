@@ -1,6 +1,6 @@
 name: Simple Poll
 main: com.betaforce.shardin.SimplePoll.SimplePoll
-version: 0.1
+version: 0.1.5
 description: Let's admin issue a poll with customizeable options.
 author: Tocksman
 website: http://goonhaven.org/
@@ -16,3 +16,6 @@ commands:
   simplepoll:
     description: This is the main SimplePoll control command.
     usage: /simplepoll <option> <args>
+  sp:
+    description: This is the main SimplePoll control command alias.
+    usage: /sp <option> <args>
