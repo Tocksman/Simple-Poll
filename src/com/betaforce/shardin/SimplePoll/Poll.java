@@ -28,15 +28,6 @@ public class Poll {
         return question;
     }
     
-    public void announceCreation(String senderName) {
-        for (Player player: plugin.getServer().getOnlinePlayers()) {
-            if (player.hasPermission("SimplePoll.vote")) { // only announce to people that can vote
-                player.sendMessage(ChatColor.GREEN + senderName + " has opened a "
-                        + "new poll! Type \"/simplepoll info\" to see it.");
-            }
-        }
-    }
-    
     public boolean addVoteOption(String label) {
         if (votemap.containsKey(label)) {
             return false;

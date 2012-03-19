@@ -34,10 +34,10 @@ public class SimplePollExecutor implements CommandExecutor {
             
             obj = new Poll(plugin, description);
             plugin.polls.add(obj);
-            obj.announceCreation((cs instanceof Player) ? (cs.getName()) : 
-                    (cs instanceof ConsoleCommandSender) ? "Console" : "Unknown");
-            
-            return true;
+            String name = (cs instanceof Player) ? (cs.getName()) : 
+                    (cs instanceof ConsoleCommandSender) ? "Console" : "Unknown";
+            announcePoll(name + " has just created a new poll! Type \"/simplepoll info\" "
+                    + "to see it!");
         }
         else if(option.equalsIgnoreCase("addoption")) {
             if (!(cs.hasPermission("SimplePoll.create"))) {
@@ -95,6 +95,32 @@ public class SimplePollExecutor implements CommandExecutor {
         else if(option.equalsIgnoreCase("help")) {
             sendSimplePollHelp(cs);
         }
+        else if(option.equalsIgnoreCase("reminder")) {
+            if (!(cs.hasPermission("SimplePoll.vote"))) {
+                cs.sendMessage("You don't have permision to do that!");
+            }
+            
+            String name = (cs instanceof Player) ? (cs.getName()) : 
+                    (cs instanceof ConsoleCommandSender) ? "Console" : "Unknown";
+            if(strings.length < 2) {
+                announcePoll(name + " wants you to vote! Type /simplepoll info "
+                        + "to check which polls you have not voted on!");
+            }
+            else if(strings.length == 2) {
+                Poll obj = matchPoll(strings[1]);
+                if (obj == null) {
+                    cs.sendMessage(ChatColor.RED + "Cannot find that poll!");
+                    return true;
+                }
+                
+                remindOfPoll(obj, name + " would like to remind you to vote for "
+                        + "this poll: " + obj.getName());
+            }
+            else {
+                cs.sendMessage(ChatColor.RED + "Usage: \"/simplepoll reminder "
+                        + "<PollID>");
+            }
+        }
         else if(option.equalsIgnoreCase("info")) {
             if (!(cs.hasPermission("SimplePoll.vote"))) {
                 cs.sendMessage("You don't have permission to do that!");
@@ -135,6 +161,9 @@ public class SimplePollExecutor implements CommandExecutor {
                 
                 cs.sendMessage("Total votes: " + obj.getTotalVotes());
             }
+            else {
+                cs.sendMessage(ChatColor.RED + "Usage: \"/simplepoll info <pollID>");
+            }
         }
         else if(option.equalsIgnoreCase("remove")) {
             if (!(cs.hasPermission("SimplePoll.create"))) {
@@ -150,7 +179,6 @@ public class SimplePollExecutor implements CommandExecutor {
             Poll obj = matchPoll(strings[1]);
             if(obj != null) {
                 plugin.polls.remove(obj);
-                obj = null;
                 cs.sendMessage(ChatColor.GREEN + "Successfully removed poll!");
                 return true;
             }
@@ -250,6 +278,22 @@ public class SimplePollExecutor implements CommandExecutor {
         if (cs instanceof Player) { // Non-players can't vote.
             cs.sendMessage("/simplepoll vote <pollID> <Option> - Vote for an option "
                     + "of a poll.");
+        }
+    }
+    
+    private void announcePoll(String message) {
+        for (Player player : plugin.getServer().getOnlinePlayers()) {
+            if (player.hasPermission("SimplePoll.vote")) { // only announce to people that can vote
+                player.sendMessage(ChatColor.GREEN + message);
+            }
+        }
+    }
+    
+    private void remindOfPoll(Poll obj, String msg) {
+        for (Player player : plugin.getServer().getOnlinePlayers()) {
+            if (player.hasPermission("SimplePoll.vote") && !obj.hasVoted(player)) {
+                player.sendMessage(ChatColor.GREEN + msg);
+            }
         }
     }
 }
