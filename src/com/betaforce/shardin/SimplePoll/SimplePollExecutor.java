@@ -1,6 +1,6 @@
 package com.betaforce.shardin.SimplePoll;
 
-import java.util.*;
+import java.util.Iterator;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -17,7 +17,7 @@ public class SimplePollExecutor implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender cs, Command cmnd, String string, String[] strings) {
         if (strings.length < 1) {
-            cs.sendMessage(ChatColor.RED + "Not enough arguments given.");
+            cs.sendMessage(ChatColor.RED + "Usage: \"/simplepoll create <Description>\"");
             return true;
         }
         String option = strings[0];
@@ -101,6 +101,9 @@ public class SimplePollExecutor implements CommandExecutor {
                         + "will not be able to vote again!");
             }
         }
+        else if(option.equalsIgnoreCase("help")) {
+            sendSimplePollHelp(cs);
+        }
         else if(option.equalsIgnoreCase("info")) {
             if (!(cs.hasPermission("SimplePoll.vote"))) {
                 cs.sendMessage("You don't have permission to do that!");
@@ -177,7 +180,7 @@ public class SimplePollExecutor implements CommandExecutor {
             }
             
             if(strings.length <= 2) { // there are not two args
-                cs.sendMessage(ChatColor.RED + "Usage: \"/simplepoll y <pollID>\"");
+                cs.sendMessage(ChatColor.RED + "Usage: \"/simplepoll vote <pollID> <Option>\"");
                 return true;
             }
             
@@ -204,7 +207,8 @@ public class SimplePollExecutor implements CommandExecutor {
             
         }
         else {
-            cs.sendMessage(ChatColor.RED + "Unknown option!");
+            cs.sendMessage(ChatColor.RED + "Unknown option! Use \"/simplepoll help\" "
+                    + "for help.");
         }
         return true;
     }
@@ -237,5 +241,21 @@ public class SimplePollExecutor implements CommandExecutor {
         }
         
         return string.trim();
+    }
+    
+    private void sendSimplePollHelp(CommandSender cs) {
+        cs.sendMessage("/simplepoll create <Description> - Create a poll.");
+        cs.sendMessage("/simplepoll remove <pollID> - Remove a poll.");
+        cs.sendMessage("/simplepoll addoption <pollID> <Option Name> - Add a "
+                + "votable option to a poll.");
+        cs.sendMessage("/simplepoll remoption <pollID> <Option Name> - Remove a "
+                + "votable option from a poll.");
+        cs.sendMessage("/simplepoll info <pollID> (Can be used with arg "
+                + "to list all polls.");
+        cs.sendMessage("/simplepoll help - Display this help.");
+        if (cs instanceof Player) { // Non-players can't vote.
+            cs.sendMessage("/simplepoll vote <pollID> <Option> - Vote for an option "
+                    + "of a poll.");
+        }
     }
 }
