@@ -28,24 +28,15 @@ public class SimplePollExecutor implements CommandExecutor {
             }
             
             Poll obj;
-            String description = "";
+            String description = (((strings.length - 1) > 0) ? 
+                    convertArrayToString(strings, 1) : 
+                    ("NewPoll" + Integer.toString(plugin.polls.size())));
             
-            if ((strings.length - 1) > 0) {
-                description = convertArrayToString(strings, 1);
-                obj = new Poll(plugin, description);
-                plugin.polls.add(obj);
-                obj.announceCreation((cs instanceof Player) ? (cs.getName()) : (cs instanceof ConsoleCommandSender) ? "Console" : "Unknown");
-                
-//                cs.sendMessage(ChatColor.GREEN + "Successfully added poll.");
-            }
-            else {
-                description = "NewPoll" + Integer.toString(plugin.polls.size()+1);
-                obj = new Poll(plugin, description);
-                plugin.polls.add(obj);
-                
-                cs.sendMessage(ChatColor.GREEN + "Successfully added poll under"
-                        + " a generic name.");
-            }
+            obj = new Poll(plugin, description);
+            plugin.polls.add(obj);
+            obj.announceCreation((cs instanceof Player) ? (cs.getName()) : 
+                    (cs instanceof ConsoleCommandSender) ? "Console" : "Unknown");
+            
             return true;
         }
         else if(option.equalsIgnoreCase("addoption")) {
@@ -169,7 +160,7 @@ public class SimplePollExecutor implements CommandExecutor {
             }
         }
         else if(option.equalsIgnoreCase("vote")) {
-            if(!(cs instanceof Player)) {
+            if(!(cs instanceof Player)) { // Only players can vote.
                 cs.sendMessage("Only players can vote in polls.");
                 return true;
             }
@@ -213,6 +204,7 @@ public class SimplePollExecutor implements CommandExecutor {
         return true;
     }
     
+    // This function matches a number to its poll.
     private Poll matchPoll(String val) {
         int num;
         Poll obj;
@@ -230,6 +222,8 @@ public class SimplePollExecutor implements CommandExecutor {
         return obj;
     }
     
+    // This function converts an array to a string.
+    // It assumes that each array element in a single word.
     private String convertArrayToString(String[] input, int toSkip) {
         String string = "";
         for (int i = 0; i < input.length; i++) {

@@ -32,7 +32,7 @@ public class Poll {
         for (Player player: plugin.getServer().getOnlinePlayers()) {
             if (player.hasPermission("SimplePoll.vote")) { // only announce to people that can vote
                 player.sendMessage(ChatColor.GREEN + senderName + " has opened a "
-                        + "new poll! Type \"/simplepoll list\" to see it.");
+                        + "new poll! Type \"/simplepoll info\" to see it.");
             }
         }
     }
