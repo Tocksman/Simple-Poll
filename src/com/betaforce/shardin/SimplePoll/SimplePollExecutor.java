@@ -118,7 +118,7 @@ public class SimplePollExecutor implements CommandExecutor {
             }
             else {
                 cs.sendMessage(ChatColor.RED + "Usage: \"/simplepoll reminder "
-                        + "<PollID>");
+                        + "<pollID>");
             }
         }
         else if(option.equalsIgnoreCase("info")) {
@@ -275,6 +275,8 @@ public class SimplePollExecutor implements CommandExecutor {
         cs.sendMessage("/simplepoll info <pollID> (Can be used with arg "
                 + "to list all polls.");
         cs.sendMessage("/simplepoll help - Display this help.");
+        cs.sendMessage("/simplepoll reminder <pollID> - Reminds everyone to vote. "
+                + "(Supplying a pollID reminds those who haven't voted for that poll.)");
         if (cs instanceof Player) { // Non-players can't vote.
             cs.sendMessage("/simplepoll vote <pollID> <Option> - Vote for an option "
                     + "of a poll.");
