@@ -209,11 +209,19 @@ public class SimplePollExecutor implements CommandExecutor {
                 return true;
             }
             
-            boolean outcome = obj.voteFor((Player) cs, convertArrayToString(strings, 2));
-            if (!outcome) {
-                if (obj.hasVoted((Player) cs)) {
-                    cs.sendMessage(ChatColor.RED + "You've already voted on this "
-                            + "poll!");
+            String chosen = convertArrayToString(strings, 2);
+            boolean outcome = obj.voteFor((Player) cs, chosen);
+            if (!outcome) { // Didn't work.
+                if (obj.hasVoted((Player) cs)) { // They've voted on this before.
+                    outcome = obj.changeVoteFor((Player) cs, chosen);
+                    if(!outcome) { // Couldn't change their vote.
+                        cs.sendMessage(ChatColor.RED + "Could not change your "
+                                + "vote on this poll. Does the option actually "
+                                + "exist?");
+                    }
+                    else {
+                        cs.sendMessage(ChatColor.GREEN + "Vote changed successfully!");
+                    }
                 }
                 else {
                     cs.sendMessage(ChatColor.RED + "That poll option does not "
