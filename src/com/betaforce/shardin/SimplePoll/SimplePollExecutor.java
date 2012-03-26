@@ -17,7 +17,7 @@ public class SimplePollExecutor implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender cs, Command cmnd, String string, String[] strings) {
         if (strings.length < 1) {
-            cs.sendMessage(ChatColor.RED + "Usage: \"/simplepoll create <Description>\"");
+            cs.sendMessage(ChatColor.RED + "Usage: \"/simplepoll <Option> <Description>\"");
             return true;
         }
         String option = strings[0];
@@ -88,8 +88,8 @@ public class SimplePollExecutor implements CommandExecutor {
             }
             else {
                 cs.sendMessage(ChatColor.GREEN + "Successfully removed vote option.");
-                cs.sendMessage(ChatColor.RED + "WARNING! Those who have already voted "
-                        + "will not be able to vote again!");
+//                cs.sendMessage(ChatColor.RED + "WARNING! Those who have already voted "
+//                        + "will not be able to vote again!");
             }
         }
         else if(option.equalsIgnoreCase("help")) {

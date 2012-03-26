@@ -1,10 +1,7 @@
 package com.betaforce.shardin.SimplePoll;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Set;
-import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
 
@@ -16,7 +13,7 @@ public class Poll {
 
     private int totalVotes;
 
-    private List<String> voted = new ArrayList<String>();
+    private HashMap<String, String> voted = new HashMap<String, String>();
     
     protected Poll(SimplePoll plugin, String question) {
         this.plugin = plugin;
@@ -52,15 +49,43 @@ public class Poll {
             return false;
         }
         else {
-            voted.add(voter.getName());
+            voted.put(voter.getName(), option);
             int numVotes = votemap.get(option);
             votemap.put(option, numVotes + 1);
             totalVotes++;
             return true;
         }
     }
+    
+    public boolean changeVoteFor(Player voter, String option) {
+        if (voter == null || !votemap.containsKey(option) || !hasVoted(voter)) {
+            return false;
+        }
+        else {
+            String formerOption = voted.get(voter.getName());
+            int formerNumVotes = votemap.get(formerOption);
+            votemap.put(formerOption, formerNumVotes - 1);
+            
+            int numVotes = votemap.get(option);
+            voted.put(voter.getName(), option);
+            votemap.put(option, numVotes + 1);
+            return true;
+        }
+    }
+    
     public boolean hasVoted(Player voter) {
-        return (voted.contains(voter.getName()));
+        String val = voted.get(voter.getName());
+        if (val == null) { // hasn't even voted yet.
+            return false;
+        }
+        else {
+            if (!votemap.containsKey(val)) { // player voted, but option has
+                return false;                // since been removed.
+            }
+            else {
+                return true; // has voted and option still exists
+            }
+        }
     }
 
     public int getTotalVotes() {
