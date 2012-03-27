@@ -287,7 +287,7 @@ public class SimplePollExecutor implements CommandExecutor {
                 + "(Supplying a pollID reminds those who haven't voted for that poll.)");
         if (cs instanceof Player) { // Non-players can't vote.
             cs.sendMessage("/simplepoll vote <pollID> <Option> - Vote for an option "
-                    + "of a poll.");
+                    + "of a poll. (Can also be used to change your vote.)");
         }
     }
     
