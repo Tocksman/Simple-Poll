@@ -96,7 +96,7 @@ public class SimplePollExecutor implements CommandExecutor {
             sendSimplePollHelp(cs);
         }
         else if(option.equalsIgnoreCase("reminder")) {
-            if (!(cs.hasPermission("SimplePoll.vote"))) {
+            if (!(cs.hasPermission("SimplePoll.create"))) {
                 cs.sendMessage("You don't have permision to do that!");
             }
             
