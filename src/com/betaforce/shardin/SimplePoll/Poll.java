@@ -1,6 +1,8 @@
 package com.betaforce.shardin.SimplePoll;
 
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 import org.bukkit.entity.Player;
 
@@ -9,7 +11,7 @@ import org.bukkit.entity.Player;
 public class Poll {
     private SimplePoll plugin;
     private String question;
-    private HashMap<String, Integer> votemap = new HashMap<String, Integer>();
+    private HashMap<String, Set> votemap = new HashMap<String, Set>();
 
     private int totalVotes;
 
@@ -25,12 +27,24 @@ public class Poll {
         return question;
     }
     
+    public void purgeVoted() {
+        Set options = votemap.keySet();
+        Iterator iter = voted.keySet().iterator();
+        while (iter.hasNext()) {
+            String name = (String) iter.next();
+            String chosen = voted.get(name);
+            if (!(options.contains(chosen))) {
+                voted.remove(name);
+            }
+        }
+    }
+    
     public boolean addVoteOption(String label) {
         if (votemap.containsKey(label)) {
             return false;
         }
         
-        votemap.put(label, 0);
+        votemap.put(label, new HashSet<String>());
         return true;
     }
     
@@ -39,8 +53,10 @@ public class Poll {
             return false;
         }
         
-        totalVotes -= votemap.get(label);
+        totalVotes -= getNumVotesFor(label);
         votemap.remove(label);
+        
+        purgeVoted();
         return true;
     }
     
@@ -49,9 +65,12 @@ public class Poll {
             return false;
         }
         else {
+            Set temp = votemap.get(option);
+            temp.add(voter.getName());
+            votemap.put(option, temp);
+            
             voted.put(voter.getName(), option);
-            int numVotes = votemap.get(option);
-            votemap.put(option, numVotes + 1);
+            
             totalVotes++;
             return true;
         }
@@ -63,12 +82,15 @@ public class Poll {
         }
         else {
             String formerOption = voted.get(voter.getName());
-            int formerNumVotes = votemap.get(formerOption);
-            votemap.put(formerOption, formerNumVotes - 1);
+            Set temp = votemap.get(formerOption);
+            temp.remove(voter.getName());
+            votemap.put(formerOption, temp);
             
-            int numVotes = votemap.get(option);
+            temp = votemap.get(option);
+            temp.add(voter.getName());
+            votemap.put(option, temp);
+            
             voted.put(voter.getName(), option);
-            votemap.put(option, numVotes + 1);
             return true;
         }
     }
@@ -92,11 +114,31 @@ public class Poll {
         return totalVotes;
     }
     
-    public int getVotesFor(String key) {
+    public Set getVotesFor(String key) {
         return votemap.get(key);
+    }
+    
+    public int getNumVotesFor(String key) {
+        return votemap.get(key).size();
     }
     
     public Set getKeys() {
         return votemap.keySet();
+    }
+    
+    public String getOptionByNumber(int val) {
+        int size = votemap.keySet().size();
+        if (val > size) {
+            return "";
+        }
+        
+        Iterator iter = votemap.keySet().iterator();
+        for (int i = 1; iter.hasNext(); i++) {
+            String temp = (String) iter.next();
+            if (i == val) {
+                return temp;
+            }
+        }
+        return "";
     }
 }

@@ -1,6 +1,7 @@
 package com.betaforce.shardin.SimplePoll;
 
 import java.util.Iterator;
+import java.util.Set;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -82,14 +83,13 @@ public class SimplePollExecutor implements CommandExecutor {
                 return true;
             }
             
-            boolean outcome = obj.remVoteOption(convertArrayToString(strings, 2));
+            String test = findOption(strings, obj);
+            boolean outcome = obj.remVoteOption(test);
             if (!outcome) {
                 cs.sendMessage(ChatColor.RED + "Cannot find that poll option!");
             }
             else {
                 cs.sendMessage(ChatColor.GREEN + "Successfully removed vote option.");
-//                cs.sendMessage(ChatColor.RED + "WARNING! Those who have already voted "
-//                        + "will not be able to vote again!");
             }
         }
         else if(option.equalsIgnoreCase("help")) {
@@ -152,11 +152,12 @@ public class SimplePollExecutor implements CommandExecutor {
                 
                 cs.sendMessage("POLL #" + strings[1] + ": " + obj.getName());
                 Iterator temp = obj.getKeys().iterator();
-                int val;
+                int val, i = 1;
                 while(temp.hasNext()) {
                     String o = (String) temp.next();
-                    val = obj.getVotesFor(o);
-                    cs.sendMessage(o + ": " + Integer.toString(val));
+                    val = obj.getNumVotesFor(o);
+                    cs.sendMessage(String.valueOf(i) + " " + o + ": " + Integer.toString(val));
+                    i++;
                 }
                 
                 cs.sendMessage("Total votes: " + obj.getTotalVotes());
@@ -164,6 +165,62 @@ public class SimplePollExecutor implements CommandExecutor {
             else {
                 cs.sendMessage(ChatColor.RED + "Usage: \"/simplepoll info <pollID>");
             }
+        }
+        else if(option.equalsIgnoreCase("optioninfo")) {
+            if (!(cs.hasPermission("SimplePoll.create"))) {
+                cs.sendMessage("You don't have permission to do that!");
+                return true;
+            }
+            
+            if(plugin.polls.size() < 1) {
+                cs.sendMessage("There are no polls right now.");
+                return true;
+            }
+            
+            if (strings.length <= 2) {
+                cs.sendMessage(ChatColor.RED + "Usage: \"/simplepoll optioninfo <pollID> <Option Name>\"");
+                return true;
+            }
+            
+            Poll obj = matchPoll(strings[1]);
+            if (obj == null) {
+                cs.sendMessage(ChatColor.RED + "Cannot find that poll!");
+                return true;
+            }
+            
+            String test = findOption(strings, obj);
+            if (test.equals("")) {
+                cs.sendMessage(ChatColor.RED + "Option does not exist!");
+                return true;
+            }
+            
+            Set votes = obj.getVotesFor(test);
+            if (votes.size() < 1) {
+                cs.sendMessage("No one has voted for this option yet.");
+                return true;
+            }
+            
+            cs.sendMessage("The following people have voted for this option: ");
+            
+            Iterator iter = votes.iterator();
+            int count = 0;
+            String temp = "", name;
+            while(iter.hasNext()) {
+                name = (String) iter.next();
+                temp += name + " ";
+                count++;
+                if (count == 10) {
+                    cs.sendMessage(temp);
+                    temp = "";
+                    count = 0;
+                }
+            }
+            
+            if (count != 0) {
+                cs.sendMessage(temp); // send the last little bit
+            }
+            
+            return true;
         }
         else if(option.equalsIgnoreCase("remove")) {
             if (!(cs.hasPermission("SimplePoll.create"))) {
@@ -209,7 +266,11 @@ public class SimplePollExecutor implements CommandExecutor {
                 return true;
             }
             
-            String chosen = convertArrayToString(strings, 2);
+            String chosen = findOption(strings, obj);
+            if (chosen.equals("")) {
+                cs.sendMessage(ChatColor.RED + "Option does not exist.");
+                return true;
+            }
             boolean outcome = obj.voteFor((Player) cs, chosen);
             if (!outcome) { // Didn't work.
                 if (obj.hasVoted((Player) cs)) { // They've voted on this before.
@@ -305,5 +366,19 @@ public class SimplePollExecutor implements CommandExecutor {
                 player.sendMessage(ChatColor.GREEN + msg);
             }
         }
+    }
+    
+    private String findOption(String[] strings, Poll obj) {
+        if (strings.length <= 3) {
+            try {
+                int val = Integer.parseInt(strings[2]);
+                return obj.getOptionByNumber(val);
+            }
+            catch (NumberFormatException e) {
+                // Do nothing.
+            }
+        }
+        
+        return convertArrayToString(strings, 2);
     }
 }
