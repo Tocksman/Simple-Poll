@@ -343,6 +343,8 @@ public class SimplePollExecutor implements CommandExecutor {
                 + "votable option from a poll.");
         cs.sendMessage("/simplepoll info <pollID> (Can be used with arg "
                 + "to list all polls.");
+        cs.sendMessage("/simplepoll optioninfo <pollID> <Option Name> - Get more "
+                + "information about who has voted on a certain option of a poll.");
         cs.sendMessage("/simplepoll help - Display this help.");
         cs.sendMessage("/simplepoll reminder <pollID> - Reminds everyone to vote. "
                 + "(Supplying a pollID reminds those who haven't voted for that poll.)");
