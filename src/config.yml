@@ -1,0 +1,5 @@
+defaults:
+  broadcast-vote: true
+  public-on-create: false
+  
+  

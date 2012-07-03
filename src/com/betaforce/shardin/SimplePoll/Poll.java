@@ -16,15 +16,25 @@ public class Poll {
     private int totalVotes;
 
     private HashMap<String, String> voted = new HashMap<String, String>();
+    private boolean hidden;
     
     protected Poll(SimplePoll plugin, String question) {
         this.plugin = plugin;
         this.question = question;
         this.totalVotes = 0;
+        this.hidden = false;
     }
     
     public String getName() {
         return question;
+    }
+    
+    public void setHidden(boolean expr) {
+        hidden = expr;
+    }
+    
+    public boolean isHidden() {
+        return hidden;
     }
     
     public void purgeVoted() {

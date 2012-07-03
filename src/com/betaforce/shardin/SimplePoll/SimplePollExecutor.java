@@ -35,10 +35,67 @@ public class SimplePollExecutor implements CommandExecutor {
             
             obj = new Poll(plugin, description);
             plugin.polls.add(obj);
-            String name = (cs instanceof Player) ? (cs.getName()) : 
-                    (cs instanceof ConsoleCommandSender) ? "Console" : "Unknown";
-            announcePoll(name + " has just created a new poll! Type \"/simplepoll info\" "
-                    + "to see it!");
+            if (plugin.getConfig().getBoolean("defaults.public-on-create", false) == false) {
+                obj.setHidden(true);
+                cs.sendMessage(ChatColor.GREEN + "The poll was created and automatically "
+                        + "set to be hidden.");
+            }
+            else {
+                String name = (cs instanceof Player) ? (cs.getName()) : 
+                        (cs instanceof ConsoleCommandSender) ? "Console" : "Unknown";
+                announcePoll(name + " has just created a new poll! Type \"/simplepoll info\" "
+                        + "to see it!");
+            }
+        }
+        else if(option.equalsIgnoreCase("hide")) {
+            if (!(cs.hasPermission("SimplePoll.create"))) {
+                cs.sendMessage("You don't have permission to do that!");
+                return true;
+            }
+            
+            if(strings.length != 2) {
+                cs.sendMessage(ChatColor.RED + "Usage: \"/simplepoll hide <pollID>\"");
+                return true;
+            }
+            
+            Poll obj = matchPoll(strings[1]);
+            if (obj == null) {
+                cs.sendMessage(ChatColor.RED + "Cannot find that poll!");
+                return true;
+            }
+            
+            if (!obj.isHidden()) {
+                obj.setHidden(true);
+                cs.sendMessage(ChatColor.GREEN + "Poll is now hidden.");
+            }
+            else {
+                cs.sendMessage(ChatColor.RED + "Poll is already hidden.");
+            }
+        }
+        else if(option.equalsIgnoreCase("unhide")) {
+            if (!(cs.hasPermission("SimplePoll.create"))) {
+                cs.sendMessage("You don't have permission to do that!");
+                return true;
+            }
+            
+            if(strings.length != 2) {
+                cs.sendMessage(ChatColor.RED + "Usage: \"/simplepoll unhide <pollID>\"");
+                return true;
+            }
+            
+            Poll obj = matchPoll(strings[1]);
+            if (obj == null) {
+                cs.sendMessage(ChatColor.RED + "Cannot find that poll!");
+                return true;
+            }
+            
+            if (obj.isHidden()) {
+                obj.setHidden(false);
+                cs.sendMessage(ChatColor.GREEN + "Poll is no longer hidden.");
+            }
+            else {
+                cs.sendMessage(ChatColor.RED + "Poll is already visible.");
+            }
         }
         else if(option.equalsIgnoreCase("addoption")) {
             if (!(cs.hasPermission("SimplePoll.create"))) {
@@ -113,6 +170,17 @@ public class SimplePollExecutor implements CommandExecutor {
                     return true;
                 }
                 
+                if (obj.isHidden()) {
+                    if (canAccessPoll(cs, obj)) {
+                        cs.sendMessage(ChatColor.RED + "You cannot vote on that "
+                                + "poll because it is hidden!");
+                    }
+                    else { // don't let people know that the hidden poll exists.
+                        cs.sendMessage(ChatColor.RED + "Cannot find that poll!");
+                    }
+                    return true;
+                }
+                
                 remindOfPoll(obj, name + " would like to remind you to vote for "
                         + "this poll: " + obj.getName());
             }
@@ -136,16 +204,27 @@ public class SimplePollExecutor implements CommandExecutor {
                 cs.sendMessage("List of polls ---------------------");
                 cs.sendMessage("<ID>:    <DESCRIPTION>    <VOTED>");
                 Poll obj;
-                String voted;
+                String voted, hidden;
                 for(int i = 0; i < plugin.polls.size(); i++) {
                     obj = plugin.polls.get(i);
+                    if (!canAccessPoll(cs, obj)) {
+                        continue; // skip it, it's hidden and they aren't allowed to see.
+                    }
+                    
                     voted = ((cs instanceof ConsoleCommandSender) ? "N/A" : (obj.hasVoted((Player) cs) && cs instanceof Player) ? "Yes" : "No");
-                    cs.sendMessage(i + ":    " + obj.getName() + "    " + voted);
+                    if (cs.hasPermission("SimplePoll.create")) {
+                        hidden = ((obj.isHidden()) ? ("Yes") : ("No"));
+                        cs.sendMessage(i + ":    " + obj.getName() + "    " + voted 
+                                + "    " + "HIDDEN: " + hidden);
+                    }
+                    else {
+                        cs.sendMessage(i + ":    " + obj.getName() + "    " + voted);
+                    }
                 }
             }
             else if (strings.length == 2) {
                 Poll obj = matchPoll(strings[1]);
-                if (obj == null) {
+                if (obj == null || !canAccessPoll(cs, obj)) {
                     cs.sendMessage(ChatColor.RED + "Cannot find that poll!");
                     return true;
                 }
@@ -245,7 +324,7 @@ public class SimplePollExecutor implements CommandExecutor {
             }
         }
         else if(option.equalsIgnoreCase("vote")) {
-            if(!(cs instanceof Player)) { // Only players can vote.
+            if (!(cs instanceof Player)) { // Only players can vote.
                 cs.sendMessage("Only players can vote in polls.");
                 return true;
             }
@@ -255,13 +334,13 @@ public class SimplePollExecutor implements CommandExecutor {
                 return true;
             }
             
-            if(strings.length <= 2) { // there are not two args
+            if (strings.length <= 2) { // there are not two args
                 cs.sendMessage(ChatColor.RED + "Usage: \"/simplepoll vote <pollID> <Option>\"");
                 return true;
             }
             
             Poll obj = matchPoll(strings[1]);
-            if(obj == null) { // non-existant
+            if (obj == null || !canAccessPoll(cs, obj)) { // non-existant
                 cs.sendMessage(ChatColor.RED + "Cannot find that poll!");
                 return true;
             }
@@ -301,6 +380,11 @@ public class SimplePollExecutor implements CommandExecutor {
         return true;
     }
     
+    // Can a certain user modify a poll?
+    private boolean canAccessPoll(CommandSender plyr, Poll obj) {
+        return (plyr.hasPermission("SimplePoll.create") || !obj.isHidden());
+    }
+    
     // This function matches a number to its poll.
     private Poll matchPoll(String val) {
         int num;
@@ -316,6 +400,7 @@ public class SimplePollExecutor implements CommandExecutor {
         catch (IndexOutOfBoundsException e) {
             return null;
         }
+
         return obj;
     }
     
@@ -341,8 +426,10 @@ public class SimplePollExecutor implements CommandExecutor {
                 + "votable option to a poll.");
         cs.sendMessage("/simplepoll remoption <pollID> <Option Name> - Remove a "
                 + "votable option from a poll.");
-        cs.sendMessage("/simplepoll info <pollID> (Can be used with arg "
-                + "to list all polls.");
+        cs.sendMessage("/simplepoll info <pollID> (Can be used without arg "
+                + "to list all polls.)");
+        cs.sendMessage("/simplepoll hide <pollID> - Hide a poll.");
+        cs.sendMessage("/simplepoll unhide <pollID> - Make a hidden poll visible.");
         cs.sendMessage("/simplepoll optioninfo <pollID> <Option Name> - Get more "
                 + "information about who has voted on a certain option of a poll.");
         cs.sendMessage("/simplepoll help - Display this help.");
