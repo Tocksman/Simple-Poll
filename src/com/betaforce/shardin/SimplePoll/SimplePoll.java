@@ -10,6 +10,7 @@ public class SimplePoll extends JavaPlugin {
     
     @Override
     public void onEnable() {
+        this.saveDefaultConfig();
         executor = new SimplePollExecutor(this);
         getCommand("simplepoll").setExecutor(executor);
         getCommand("sp").setExecutor(executor);
