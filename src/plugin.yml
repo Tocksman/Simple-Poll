@@ -1,6 +1,6 @@
 name: Simple Poll
 main: com.betaforce.shardin.SimplePoll.SimplePoll
-version: 0.2
+version: 0.2.1
 description: Let's admin issue a poll with customizeable options.
 author: Tocksman
 website: http://goonhaven.org/
